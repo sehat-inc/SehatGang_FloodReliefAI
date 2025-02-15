@@ -1,0 +1,31 @@
+WORKFLOW 
+---------
+
+1. Frontend 
+	
+	- HTML/CSS 
+	- Input: 
+		- Current Location 
+		- SIM Number 
+		- Database (if we get time) (think more about it) (dont give access)
+	- Outputs: 
+		- Map (Current and Flooded Map)
+		- Chat (Relief) (Normal Agent with Tools such as: UNICIEF, etc.)
+		- Dashboard (Resource Allocation)
+
+2. Backend 
+	
+	- Django -> REST for resource tracking 
+	- OR Tools -> resource optimization 
+	- PostreSQL and postGIS -> Setup this first 
+	- Crew AI: 
+		1. Flood Scout Agent -> Flood or not (Not implementing) (Future work)
+
+		2. Resource Allocater Agent -> OR Tools and Database: algo will run all the agent has to do is summarize results and pass it on to the next agent. 
+
+		3. SMS Alert Agent -> Will summarize results for every person in the local area -> We might have the agent send SMS in both english and the top language spoken there.
+ 
+		4. Social Media Scout -> Tools such as latest news from X/other sites (don't know if this should be implemented yet) (Save this for the end)
+		
+		5. (Boss Agent) Chatbot Agent -> Will recieve all results of every agent and can use these results to talk with users that need help.  
+		
