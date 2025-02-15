@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flood Relief Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Flood Relief Management System</h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="form-container">
+            <h2>Create New Demand</h2>
+            <form action="{{ url_for('create_demand') }}" method="POST">
+                <div class="form-group">
+                    <label for="type">Resource Type:</label>
+                    <select name="type" id="type" required>
+                        {% for type in resource_types %}
+                            <option value="{{ type.value }}">{{ type.value.title() }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" name="quantity" id="quantity" min="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="priority">Priority (1-5):</label>
+                    <input type="number" name="priority" id="priority" min="1" max="5" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="city">City:</label>
+                    <input type="text" name="city" id="city" required>
+                </div>
+
+                <button type="submit" class="submit-btn">Create Demand</button>
+            </form>
+        </div>
+
+        <div class="demands-list">
+            <h2>Current Demands</h2>
+            {% if demands %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>Quantity</th>
+                            <th>Priority</th>
+                            <th>City</th>
+                            <th>Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for demand in demands %}
+                            <tr>
+                                <td>{{ demand.id }}</td>
+                                <td>{{ demand.type }}</td>
+                                <td>{{ demand.quantity }}</td>
+                                <td>{{ demand.priority }}</td>
+                                <td>{{ demand.city }}</td>
+                                <td>
+                                    {% if demand.location %}
+                                        Lat: {{ demand.location.latitude }}<br>
+                                        Lon: {{ demand.location.longitude }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No demands found.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
