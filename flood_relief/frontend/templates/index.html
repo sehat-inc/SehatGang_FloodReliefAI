@@ -1,82 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flood Relief Management</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flood Relief Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 1s ease-out;
+        }
+        .animate-slideIn {
+            animation: slideIn 0.5s ease-out;
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .hero-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <h1>Flood Relief Management System</h1>
-        
+<body class="bg-gray-900 text-gray-400">
+    <!-- Navbar -->
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <a href="#" class="text-2xl font-bold text-yellow-500">FloodRelief AI</a>
+                <div class="hidden md:flex space-x-4">
+                    <a href="#demands" class="hover:text-blue-400 transition duration-300">Demands</a>
+                    <a href="#create-demand" class="hover:text-blue-400 transition duration-300">Create Demand</a>
+                </div>
+                <button class="md:hidden text-white focus:outline-none">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative h-96 bg-center bg-cover flex items-center justify-center animate-fadeIn" style="background-image: url('https://media.cnn.com/api/v1/images/stellar/prod/220829154454-01-pakistan-flooding-unf.jpg?c=original&q=h_618,c_fill');">
+        <div class="absolute inset-0 hero-overlay"></div>
+        <div class="text-center relative z-10">
+            <h1 class="text-5xl font-bold mb-4 text-white">Flood Relief Efforts</h1>
+            <p class="text-xl text-gray-200">Aid the affected with immediate resource &amp; shelter</p>
+            <a href="#create-demand" class="mt-6 px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-300 inline-block">Get Started</a>
+        </div>
+    </section>
+
+    <!-- Stats Cards -->
+    <section class="container mx-auto px-4 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="glass-effect p-6 text-center animate-slideIn" style="animation-delay: 0.1s;">
+                <i class="fas fa-clipboard-list text-4xl text-blue-400 mb-4"></i>
+                <h5 class="text-xl font-semibold mb-2">Demands</h5>
+                <h3 class="text-3xl font-bold text-blue-400">{{ count }}</h3>
+                <p class="text-gray-400">Number of active demands</p>
+            </div>
+            <div class="glass-effect p-6 text-center animate-slideIn" style="animation-delay: 0.2s;">
+                <i class="fas fa-tasks text-4xl text-green-400 mb-4"></i>
+                <h5 class="text-xl font-semibold mb-2">Allocations</h5>
+                <h3 class="text-3xl font-bold text-green-400">--</h3>
+                <p class="text-gray-400">Incoming feature</p>
+            </div>
+            <div class="glass-effect p-6 text-center animate-slideIn" style="animation-delay: 0.3s;">
+                <i class="fas fa-box-open text-4xl text-yellow-400 mb-4"></i>
+                <h5 class="text-xl font-semibold mb-2">Resources</h5>
+                <h3 class="text-3xl font-bold text-yellow-400">--</h3>
+                <p class="text-gray-400">Incoming feature</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="container mx-auto px-4 py-12">
+        <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                    <div class="bg-{{ category }}-500 text-white p-4 rounded-md mb-4 animate-fadeIn">{{ message }}</div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
 
-        <div class="form-container">
-            <h2>Create New Demand</h2>
-            <form action="{{ url_for('create_demand') }}" method="POST">
-                <div class="form-group">
-                    <label for="type">Resource Type:</label>
-                    <select name="type" id="type" required>
-                        {% for type in resource_types %}
-                            <option value="{{ type.value }}">{{ type.value.title() }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="quantity">Quantity:</label>
-                    <input type="number" name="quantity" id="quantity" min="1" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="priority">Priority (1-5):</label>
-                    <input type="number" name="priority" id="priority" min="1" max="5" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="city">City:</label>
-                    <input type="text" name="city" id="city" required>
-                </div>
-
-                <button type="submit" class="submit-btn">Create Demand</button>
-            </form>
-        </div>
-
-        <div class="demands-list">
-            <h2>Current Demands</h2>
+        <!-- Demands Table -->
+        <h2 id="demands" class="text-3xl font-bold mb-6 animate-slideIn">Current Demands</h2>
+        <div class="overflow-x-auto animate-slideIn">
             {% if demands %}
-                <table>
-                    <thead>
+                <table class="w-full glass-effect">
+                    <thead class="bg-gray-700">
                         <tr>
-                            <th>ID</th>
-                            <th>Type</th>
-                            <th>Quantity</th>
-                            <th>Priority</th>
-                            <th>City</th>
-                            <th>Location</th>
+                            <th class="p-3 text-left">ID</th>
+                            <th class="p-3 text-left">Type</th>
+                            <th class="p-3 text-left">Quantity</th>
+                            <th class="p-3 text-left">Priority</th>
+                            <th class="p-3 text-left">City</th>
+                            <th class="p-3 text-left">Coordinates</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for demand in demands %}
-                            <tr>
-                                <td>{{ demand.id }}</td>
-                                <td>{{ demand.type }}</td>
-                                <td>{{ demand.quantity }}</td>
-                                <td>{{ demand.priority }}</td>
-                                <td>{{ demand.city }}</td>
-                                <td>
+                            <tr class="border-b border-gray-700">
+                                <td class="p-3">{{ demand.id }}</td>
+                                <td class="p-3 capitalize">{{ demand.type }}</td>
+                                <td class="p-3">{{ demand.quantity }}</td>
+                                <td class="p-3">{{ demand.priority }}</td>
+                                <td class="p-3">{{ demand.city }}</td>
+                                <td class="p-3">
                                     {% if demand.location %}
-                                        Lat: {{ demand.location.latitude }}<br>
-                                        Lon: {{ demand.location.longitude }}
+                                        Lat: {{ demand.location.latitude }}<br>Lon: {{ demand.location.longitude }}
                                     {% else %}
-                                        N/A
+                                        Unknown
                                     {% endif %}
                                 </td>
                             </tr>
@@ -84,9 +128,72 @@
                     </tbody>
                 </table>
             {% else %}
-                <p>No demands found.</p>
+                <p class="text-gray-400">No demands found.</p>
             {% endif %}
         </div>
+
+        <!-- Create Demand Form -->
+        <h2 id="create-demand" class="text-3xl font-bold mt-12 mb-6 animate-slideIn">Create New Demand</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="glass-effect p-6 animate-slideIn">
+                <form action="{{ url_for('create_demand') }}" method="POST" class="space-y-4">
+                    <div>
+                        <label for="type" class="block text-sm font-medium text-gray-300">Resource Type</label>
+                        <select name="type" id="type" class="mt-1 block w-full bg-gray-700 border-gray-600 text-white rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
+                            {% for t in resource_types %}
+                                <option value="{{ t.value }}">{{ t.value.title() }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="quantity" class="block text-sm font-medium text-gray-300">Quantity</label>
+                        <input type="number" name="quantity" id="quantity" class="mt-1 block w-full bg-gray-700 border-gray-600 text-white rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" min="1" required>
+                    </div>
+                    <div>
+                        <label for="priority" class="block text-sm font-medium text-gray-300">Priority (1-5)</label>
+                        <input type="number" name="priority" id="priority" class="mt-1 block w-full bg-gray-700 border-gray-600 text-white rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" min="1" max="5" required>
+                    </div>
+                    <div>
+                        <label for="city" class="block text-sm font-medium text-gray-300">City</label>
+                        <input type="text" name="city" id="city" class="mt-1 block w-full bg-gray-700 border-gray-600 text-white rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
+                    </div>
+                    <button type="submit" class="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition duration-300">Create Demand</button>
+                </form>
+            </div>
+            <div class="glass-effect p-6 flex items-center animate-slideIn">
+                <div>
+                    <h5 class="text-xl font-semibold mb-4">How It Works</h5>
+                    <ul class="list-disc list-inside space-y-2 text-gray-300">
+                        <li>Choose resource type (boat, shelter, food)</li>
+                        <li>Enter quantity and priority</li>
+                        <li>Specify the city</li>
+                        <li>Submit to allocate resources</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2023 FloodRelief AI - Developed by Sehat Gang</p>
+        </div>
+    </footer>
+
+    <script>
+        // Optional JS for interactivity
+        document.addEventListener('DOMContentLoaded', (event) => {
+            // Add smooth scrolling to all links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
 </body>
 </html>
