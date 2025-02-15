@@ -1,0 +1,22 @@
+        <div class="hero-slide active" style="background-image: url('https://cdn.vox-cdn.com/thumbor/ozwPtNQq_SSYi1uFjYdOmkkzVgI=/0x0:3900x2600/1200x675/filters:focal(1566x1561:2190x2185)/cdn.vox-cdn.com/uploads/chorus_image/image/71300748/GettyImages_1242750214a.0.jpg')"></div>
+        <div class="hero-slide" style="background-image: url('https://i.pinimg.com/originals/66/77/f6/6677f61c2c2b6d550ccb918296d5db85.png')"></div>
+        <div class="hero-slide" style="background-image: url('https://cdn.thewire.in/wp-content/uploads/2022/09/04135840/6QB47446R5OTZIJ7UQHTVFWBUY.jpeg')"></div>
+
+
+
+
+
+        <nav class="fixed w-full z-50 glass-morphism">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="animate__animated animate__fadeInLeft">
+                    <span class="text-3xl font-bold gradient-bg text-transparent bg-clip-text">FloodRelief AI</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#demands" class="hover-scale hover:text-blue-400 transition-all">Demands</a>
+                    <a href="#resources" class="hover-scale hover:text-blue-400 transition-all">Resources</a>
+                    <a href="#create-demand" class="hover-scale hover:text-blue-400 transition-all">Create</a>
+                </div>
+            </div>
+        </div>
+    </nav>

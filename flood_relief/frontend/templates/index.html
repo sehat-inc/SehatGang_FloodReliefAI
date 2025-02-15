@@ -3,197 +3,357 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Flood Relief Dashboard</title>
+    <title>Flood Relief Command Center</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
     <style>
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
         }
-        @keyframes slideIn {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+
+        @keyframes rotate-bg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        .animate-fadeIn {
-            animation: fadeIn 1s ease-out;
+
+        .hero-slider {
+            position: relative;
+            height: 80vh;
+            overflow: hidden;
         }
-        .animate-slideIn {
-            animation: slideIn 0.5s ease-out;
+
+        .hero-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            background-size: cover;
+            background-position: center;
         }
-        .glass-effect {
+
+        .hero-slide.active {
+            opacity: 1;
+        }
+
+        .hero-content {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2rem;
+            border-radius: 1rem;
+        }
+
+        .floating-card {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: rotate-bg 15s ease infinite;
+        }
+
+        .glass-morphism {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
-            border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .hero-overlay {
-            background-color: rgba(0, 0, 0, 0.5);
+
+        .data-card {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+
+        .data-table {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .data-table::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .data-table::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.5);
+            border-radius: 4px;
+        }
+
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 1rem;
+        }
+
+        .compact-form {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-field {
+            margin-bottom: 1rem;
+        }
+
+        .priority-selector {
+            display: flex;
+            gap: 0.5rem;
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-400">
+<body class="bg-gray-900 text-gray-100">
     <!-- Navbar -->
-    <nav class="bg-gray-800 shadow-lg">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center py-4">
-                <a href="#" class="text-2xl font-bold text-yellow-500">FloodRelief AI</a>
-                <div class="hidden md:flex space-x-4">
-                    <a href="#demands" class="hover:text-blue-400 transition duration-300">Demands</a>
-                    <a href="#create-demand" class="hover:text-blue-400 transition duration-300">Create Demand</a>
+    <nav class="fixed w-full z-50 glass-morphism">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="animate__animated animate__fadeInLeft">
+                    <span class="text-3xl font-bold text-white">FloodRelief AI</span>
                 </div>
-                <button class="md:hidden text-white focus:outline-none">
-                    <i class="fas fa-bars"></i>
-                </button>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#demands" class="hover-scale hover:text-blue-400 transition-all">Demands</a>
+                    <a href="#resources" class="hover-scale hover:text-blue-400 transition-all">Resources</a>
+                    <a href="#create-demand" class="hover-scale hover:text-blue-400 transition-all">Create</a>
+                </div>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="relative h-96 bg-center bg-cover flex items-center justify-center animate-fadeIn" style="background-image: url('https://media.cnn.com/api/v1/images/stellar/prod/220829154454-01-pakistan-flooding-unf.jpg?c=original&q=h_618,c_fill');">
-        <div class="absolute inset-0 hero-overlay"></div>
-        <div class="text-center relative z-10">
-            <h1 class="text-5xl font-bold mb-4 text-white">Flood Relief Efforts</h1>
-            <p class="text-xl text-gray-200">Aid the affected with immediate resource &amp; shelter</p>
-            <a href="#create-demand" class="mt-6 px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition duration-300 inline-block">Get Started</a>
+    <div class="hero-slider">
+        <div class="hero-slide active" style="background-image: url('https://cdn.vox-cdn.com/thumbor/ozwPtNQq_SSYi1uFjYdOmkkzVgI=/0x0:3900x2600/1200x675/filters:focal(1566x1561:2190x2185)/cdn.vox-cdn.com/uploads/chorus_image/image/71300748/GettyImages_1242750214a.0.jpg')"></div>
+        <div class="hero-slide active" style="background-image: url('https://i.pinimg.com/originals/66/77/f6/6677f61c2c2b6d550ccb918296d5db85.png')"></div>
+        <div class="hero-slide active" style="background-image: url('https://cdn.thewire.in/wp-content/uploads/2022/09/04135840/6QB47446R5OTZIJ7UQHTVFWBUY.jpeg')"></div>
+        <div class="absolute inset-0 bg-black bg-opacity-50 z-10"></div>
+        <div class="absolute inset-0 flex items-center justify-center z-20">
+            <div class="hero-content">
+                <h1 class="text-6xl font-bold mb-6 text-white">Emergency Response Hub</h1>
+                <p class="text-2xl mb-8 text-gray-300">Coordinating Relief Efforts in Real-Time</p>
+                <a href="#create-demand" class="px-8 py-4 bg-blue-600 rounded-full hover:bg-blue-700 transition-all transform hover:-translate-y-1 inline-block">
+                    Initialize Response
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <section class="py-20 px-6">
+        <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="floating-card glass-morphism rounded-lg p-8 text-center">
+                <i class="fas fa-water text-5xl text-blue-400 mb-4"></i>
+                <h3 class="text-4xl font-bold mb-2">{{ count }}</h3>
+                <p class="text-gray-400">Active Demands</p>
+            </div>
+            <div class="floating-card glass-morphism rounded-lg p-8 text-center" style="animation-delay: 0.2s">
+                <i class="fas fa-hands-helping text-5xl text-green-400 mb-4"></i>
+                <h3 class="text-4xl font-bold mb-2">--</h3>
+                <p class="text-gray-400">Resources Deployed</p>
+            </div>
+            <div class="floating-card glass-morphism rounded-lg p-8 text-center" style="animation-delay: 0.4s">
+                <i class="fas fa-users text-5xl text-yellow-400 mb-4"></i>
+                <h3 class="text-4xl font-bold mb-2">--</h3>
+                <p class="text-gray-400">People Assisted</p>
+            </div>
         </div>
     </section>
 
-    <!-- Stats Cards -->
-    <section class="container mx-auto px-4 py-12">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="glass-effect p-6 text-center animate-slideIn" style="animation-delay: 0.1s;">
-                <i class="fas fa-clipboard-list text-4xl text-blue-400 mb-4"></i>
-                <h5 class="text-xl font-semibold mb-2">Demands</h5>
-                <h3 class="text-3xl font-bold text-blue-400">{{ count }}</h3>
-                <p class="text-gray-400">Number of active demands</p>
-            </div>
-            <div class="glass-effect p-6 text-center animate-slideIn" style="animation-delay: 0.2s;">
-                <i class="fas fa-tasks text-4xl text-green-400 mb-4"></i>
-                <h5 class="text-xl font-semibold mb-2">Allocations</h5>
-                <h3 class="text-3xl font-bold text-green-400">--</h3>
-                <p class="text-gray-400">Incoming feature</p>
-            </div>
-            <div class="glass-effect p-6 text-center animate-slideIn" style="animation-delay: 0.3s;">
-                <i class="fas fa-box-open text-4xl text-yellow-400 mb-4"></i>
-                <h5 class="text-xl font-semibold mb-2">Resources</h5>
-                <h3 class="text-3xl font-bold text-yellow-400">--</h3>
-                <p class="text-gray-400">Incoming feature</p>
-            </div>
-        </div>
-    </section>
-
-    <div class="container mx-auto px-4 py-12">
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="bg-{{ category }}-500 text-white p-4 rounded-md mb-4 animate-fadeIn">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
-        <!-- Demands Table -->
-        <h2 id="demands" class="text-3xl font-bold mb-6 animate-slideIn">Current Demands</h2>
-        <div class="overflow-x-auto animate-slideIn">
-            {% if demands %}
-                <table class="w-full glass-effect">
-                    <thead class="bg-gray-700">
-                        <tr>
-                            <th class="p-3 text-left">ID</th>
-                            <th class="p-3 text-left">Type</th>
-                            <th class="p-3 text-left">Quantity</th>
-                            <th class="p-3 text-left">Priority</th>
-                            <th class="p-3 text-left">City</th>
-                            <th class="p-3 text-left">Coordinates</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for demand in demands %}
-                            <tr class="border-b border-gray-700">
-                                <td class="p-3">{{ demand.id }}</td>
-                                <td class="p-3 capitalize">{{ demand.type }}</td>
-                                <td class="p-3">{{ demand.quantity }}</td>
-                                <td class="p-3">{{ demand.priority }}</td>
-                                <td class="p-3">{{ demand.city }}</td>
-                                <td class="p-3">
-                                    {% if demand.location %}
-                                        Lat: {{ demand.location.latitude }}<br>Lon: {{ demand.location.longitude }}
-                                    {% else %}
-                                        Unknown
-                                    {% endif %}
+    <!-- Main Content -->
+    <div class="container mx-auto px-6 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+            <!-- Demands Card -->
+            <div class="data-card p-6" id="demands">
+                <h2 class="text-2xl font-bold mb-4 text-white">Active Demands</h2>
+                <div class="data-table">
+                    {% if demands %}
+                    <table class="w-full">
+                        <thead class="border-b border-gray-700">
+                            <tr>
+                                <th class="p-2 text-left">ID</th>
+                                <th class="p-2 text-left">Type</th>
+                                <th class="p-2 text-left">Qty</th>
+                                <th class="p-2 text-left">Priority</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for demand in demands %}
+                            <tr class="hover:bg-blue-900/30 transition-colors">
+                                <td class="p-2">#{{ demand.id }}</td>
+                                <td class="p-2 capitalize">{{ demand.type }}</td>
+                                <td class="p-2">{{ demand.quantity }}</td>
+                                <td class="p-2">
+                                    <span class="px-2 py-1 rounded-full text-xs 
+                                        {% if demand.priority == 1 %}bg-red-500{% endif %}
+                                        {% if demand.priority == 2 %}bg-orange-500{% endif %}
+                                        {% if demand.priority == 3 %}bg-yellow-500{% endif %}
+                                        {% if demand.priority == 4 %}bg-blue-500{% endif %}
+                                        {% if demand.priority == 5 %}bg-green-500{% endif %}">
+                                        P{{ demand.priority }}
+                                    </span>
                                 </td>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p class="text-gray-400">No demands found.</p>
-            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-center text-gray-400">No active demands</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Resources Card -->
+            <div class="data-card p-6" id="resources">
+                <h2 class="text-2xl font-bold mb-4 text-white">Available Resources</h2>
+                <div class="data-table">
+                    {% if resources %}
+                    <table class="w-full">
+                        <thead class="border-b border-gray-700">
+                            <tr>
+                                <th class="p-2 text-left">ID</th>
+                                <th class="p-2 text-left">Type</th>
+                                <th class="p-2 text-left">Quantity</th>
+                                <th class="p-2 text-left">Location</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for resource in resources %}
+                            <tr class="hover:bg-blue-900/30 transition-colors">
+                                <td class="p-2">#{{ resource.id }}</td>
+                                <td class="p-2 capitalize">{{ resource.type }}</td>
+                                <td class="p-2">{{ resource.quantity }}</td>
+                                <td class="p-2">{{ resource.city }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-center text-gray-400">No resources available</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
 
         <!-- Create Demand Form -->
-        <h2 id="create-demand" class="text-3xl font-bold mt-12 mb-6 animate-slideIn">Create New Demand</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="glass-effect p-6 animate-slideIn">
-                <form action="{{ url_for('create_demand') }}" method="POST" class="space-y-4">
-                    <div>
-                        <label for="type" class="block text-sm font-medium text-gray-300">Resource Type</label>
-                        <select name="type" id="type" class="mt-1 block w-full bg-gray-700 border-gray-600 text-white rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
-                            {% for t in resource_types %}
-                                <option value="{{ t.value }}">{{ t.value.title() }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div>
-                        <label for="quantity" class="block text-sm font-medium text-gray-300">Quantity</label>
-                        <input type="number" name="quantity" id="quantity" class="mt-1 block w-full bg-gray-700 border-gray-600 text-white rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" min="1" required>
-                    </div>
-                    <div>
-                        <label for="priority" class="block text-sm font-medium text-gray-300">Priority (1-5)</label>
-                        <input type="number" name="priority" id="priority" class="mt-1 block w-full bg-gray-700 border-gray-600 text-white rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" min="1" max="5" required>
-                    </div>
-                    <div>
-                        <label for="city" class="block text-sm font-medium text-gray-300">City</label>
-                        <input type="text" name="city" id="city" class="mt-1 block w-full bg-gray-700 border-gray-600 text-white rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" required>
-                    </div>
-                    <button type="submit" class="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition duration-300">Create Demand</button>
-                </form>
-            </div>
-            <div class="glass-effect p-6 flex items-center animate-slideIn">
-                <div>
-                    <h5 class="text-xl font-semibold mb-4">How It Works</h5>
-                    <ul class="list-disc list-inside space-y-2 text-gray-300">
-                        <li>Choose resource type (boat, shelter, food)</li>
-                        <li>Enter quantity and priority</li>
-                        <li>Specify the city</li>
-                        <li>Submit to allocate resources</li>
-                    </ul>
+        <div class="data-card p-6 mb-16" id="create-demand">
+            <h2 class="text-2xl font-bold mb-6 text-white">Create Demand</h2>
+            <form action="{{ url_for('create_demand') }}" method="POST" class="compact-form">
+                <div class="form-field">
+                    <label class="block text-sm font-medium mb-2">Resource Type</label>
+                    <select name="type" class="w-full bg-gray-800 rounded-lg p-2 border border-gray-700">
+                        {% for t in resource_types %}
+                        <option value="{{ t.value }}">{{ t.value.title() }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
-            </div>
+                <div class="form-field">
+                    <label class="block text-sm font-medium mb-2">Quantity</label>
+                    <input type="number" name="quantity" class="w-full bg-gray-800 rounded-lg p-2 border border-gray-700">
+                </div>
+                <div class="form-field">
+                    <label class="block text-sm font-medium mb-2">City</label>
+                    <input type="text" name="city" class="w-full bg-gray-800 rounded-lg p-2 border border-gray-700">
+                </div>
+                <div class="form-field">
+                    <label class="block text-sm font-medium mb-2">Priority Level</label>
+                    <div class="priority-selector">
+                        {% for i in range(1, 6) %}
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" name="priority" value="{{ i }}" class="hidden">
+                            <span class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-gray-700 hover:border-blue-500 transition-colors">
+                                {{ i }}
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-span-2">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg p-3 transition-all transform hover:-translate-y-1">
+                        Submit Demand
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Map Section -->
+        <div class="data-card p-6">
+            <h2 class="text-2xl font-bold mb-4 text-white">Demand Locations</h2>
+            <div id="map"></div>
         </div>
     </div>
 
     <!-- Footer -->
     <footer class="bg-gray-800 text-gray-300 py-8 mt-12">
         <div class="container mx-auto px-4 text-center">
-            <p>&copy; 2023 FloodRelief AI - Developed by Sehat Gang</p>
+            <p>&copy; 2024 FloodRelief AI - Developed with ❤️ by Sehat Gang</p>
         </div>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
     <script>
-        // Optional JS for interactivity
-        document.addEventListener('DOMContentLoaded', (event) => {
-            // Add smooth scrolling to all links
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    document.querySelector(this.getAttribute('href')).scrollIntoView({
-                        behavior: 'smooth'
-                    });
-                });
-            });
-        });
+        // Hero Slider
+        const slides = document.querySelectorAll('.hero-slide');
+        let currentSlide = 0;
+
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+
+        setInterval(nextSlide, 5000);
+
+        // Initialize map
+        const map = L.map('map').setView([30.3753, 69.3451], 6); // Pakistan center coordinates
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Add demand locations to map
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <script>
+        // Previous slider code remains same
+
+        // Initialize map
+        const map = L.map('map').setView([30.3753, 69.3451], 6); // Pakistan center coordinates
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Add demand locations to map
+        {% if demands %}
+            {% for demand in demands %}
+                {% if demand.location %}
+                    L.circleMarker([{{ demand.location.latitude }}, {{ demand.location.longitude }}], {
+                        color: 'red',
+                        fillColor: '#f03',
+                        fillOpacity: 0.5,
+                        radius: 8
+                    }).addTo(map)
+                    .bindPopup('Demand #{{ demand.id }}<br>Type: {{ demand.type }}<br>Quantity: {{ demand.quantity }}');
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        // Previous priority selection code remains same
     </script>
-</body>
-</html>

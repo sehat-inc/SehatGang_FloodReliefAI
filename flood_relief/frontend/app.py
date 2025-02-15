@@ -3,7 +3,6 @@ import requests
 from enum import Enum
 import os
 
-
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 
@@ -41,27 +40,37 @@ class ResourceType(str, Enum):
 @app.route('/')
 def index():
     try:
-        response = requests.get(f"{BACKEND_URL}/demands/")
-        demands = response.json() if response.status_code == 200 else []
+        # Fetch demands
+        demands_response = requests.get(f"{BACKEND_URL}/demands/")
+        demands = demands_response.json() if demands_response.status_code == 200 else []
         count = len(demands)
-        # Sort demands by priority (highest first) and take top 10
-        demands = sorted(demands, key=lambda x: x.get('priority', 1), reverse=False)[:4]
+        demands = sorted(demands, key=lambda x: x.get('priority', 1), reverse=False)[:]
         
-        for demand in demands:
-            if demand.get('location'):
-                location = demand['location']
-                lat = location.get('latitude')
-                lon = location.get('longitude')
+        # Fetch resources
+        resources_response = requests.get(f"{BACKEND_URL}/resources/")
+        resources = resources_response.json() if resources_response.status_code == 200 else []
+        resources = sorted(resources, key=lambda x: x.get('quantity', 0), reverse=True)[:]
+        
+        # Process cities for both demands and resources
+        for item in demands + resources:
+            if item.get('location'):
+                lat = item['location'].get('latitude')
+                lon = item['location'].get('longitude')
                 if lat is not None and lon is not None:
                     city = get_city(lat, lon)
                     if city != "Unknown":
-                        demand['city'] = city
+                        item['city'] = city
+                        
     except requests.RequestException as e:
-        print(f"Error fetching demands: {str(e)}")
-        demands = []
-        flash("Could not fetch current demands", "error")
+        print(f"Error fetching data: {str(e)}")
+        demands, resources = [], []
+        flash("Could not fetch data", "error")
     
-    return render_template('index.html', demands=demands, resource_types=ResourceType, count=count)
+    return render_template('index.html', 
+                         demands=demands, 
+                         resources=resources,
+                         resource_types=ResourceType, 
+                         count=count)
 
 @app.route('/create_demand', methods=['POST'])
 def create_demand():
