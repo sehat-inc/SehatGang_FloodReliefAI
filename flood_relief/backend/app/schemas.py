@@ -8,40 +8,44 @@ class ResourceType(str, Enum):
     SHELTER = "shelter"
     FOOD = "food"
 
-class LocationBase(BaseModel):
-    longitude: Annotated[float, Field(ge=-180, le=180)]
-    latitude: Annotated[float, Field(ge=-90, le=90)]
-
 class DemandBase(BaseModel):
     type: ResourceType
     quantity: Annotated[int, Field(gt=0)]
     priority: Annotated[int, Field(ge=1, le=5)]
-    location: LocationBase
+    city: str
 
 class DemandCreate(DemandBase):
     pass
 
-class DemandResponse(DemandBase):
+class DemandResponse(BaseModel):
     id: int
-    
+    type: ResourceType
+    quantity: int
+    priority: int
+    city: str
+    location: dict  # This will contain the coordinates
+
     class Config:
         from_attributes = True
-        
+    
     @classmethod
     def from_orm(cls, obj):
+        # Get coordinates from the geometry field
+        coords = obj.get_coordinates()
         return cls(
             id=obj.id,
             type=obj.type,
             quantity=obj.quantity,
             priority=obj.priority,
-            location=obj.get_coordinates()
+            city=obj.city if hasattr(obj, 'city') else "Unknown",  # Fallback for existing records
+            location=coords
         )
 
 # Similar updates for Resource schemas
 class ResourceBase(BaseModel):
     type: ResourceType
     quantity: Annotated[int, Field(ge=0)]
-    location: LocationBase
+    city: str
 
 class ResourceCreate(ResourceBase):
     pass
@@ -58,7 +62,7 @@ class ResourceResponse(ResourceBase):
             id=obj.id,
             type=obj.type,
             quantity=obj.quantity,
-            location=obj.get_coordinates()
+            city=obj.city
         )
 
 class AllocationBase(BaseModel):
