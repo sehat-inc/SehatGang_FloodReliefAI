@@ -4,7 +4,6 @@ from sqlalchemy import Column, Integer, String, ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship
 from .database import Base
 from geoalchemy2.shape import to_shape
-from shapely.geometry import Point
 
 class Resource(Base):
     __tablename__ = "resources"
