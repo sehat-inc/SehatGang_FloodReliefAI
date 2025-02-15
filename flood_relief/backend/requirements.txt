@@ -1,7 +1,0 @@
-fastapi
-uvicorn
-sqlalchemy
-geoalchemy2
-asyncpg
-shapely
-pydantic
