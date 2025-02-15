@@ -1,0 +1,23 @@
+{
+    "id": 11,
+    "quantity": 2,
+    "resource_details": {
+        "id": 4,
+        "type": "boat",
+        "quantity": 1,
+        "location": {
+            "longitude": 67.0011,
+            "latitude": 24.8607
+        }
+    },
+    "demand_details": {
+        "id": 30,
+        "type": "boat",
+        "quantity": 2,
+        "priority": 1,
+        "location": {
+            "longitude": 67.0207055,
+            "latitude": 24.8546842
+        }
+    }
+}
