@@ -73,8 +73,11 @@ class AllocationBase(BaseModel):
 class AllocationCreate(AllocationBase):
     pass
 
-class AllocationResponse(AllocationBase):
+class AllocationResponse(BaseModel):
     id: int
+    resource_id: int
+    demand_id: int
+    quantity: int
     
     class Config:
         from_attributes = True
