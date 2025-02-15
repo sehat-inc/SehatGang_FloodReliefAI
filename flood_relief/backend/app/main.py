@@ -90,3 +90,25 @@ async def create_demand_allocation(demand: schemas.DemandCreate, db: AsyncSessio
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/resources/")
+async def get_resources(
+    resource_type: schemas.ResourceType = None,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all resources with optional filtering"""
+    query = select(models.Resource)
+    
+    if resource_type:
+        query = query.where(models.Resource.type == resource_type)
+    
+    result = await db.execute(query)
+    resources = result.scalars().all()
+    
+    # Convert to dictionary with coordinates
+    return [{
+        "id": resource.id,
+        "type": resource.type,
+        "quantity": resource.quantity,
+        "location": resource.get_coordinates()
+    } for resource in resources]
