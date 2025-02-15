@@ -75,9 +75,33 @@ class AllocationCreate(AllocationBase):
 
 class AllocationResponse(BaseModel):
     id: int
-    resource_id: int
-    demand_id: int
     quantity: int
+    resource_details: dict
+    demand_details: dict
     
     class Config:
         from_attributes = True
+    
+    @classmethod
+    def from_orm(cls, obj):
+        # Ensure relationships are loaded
+        if not hasattr(obj, 'resource') or not hasattr(obj, 'demand'):
+            raise ValueError("Resource and Demand relationships must be loaded")
+            
+        return cls(
+            id=obj.id,
+            quantity=obj.quantity,
+            resource_details={
+                "id": obj.resource.id,
+                "type": obj.resource.type,
+                "quantity": obj.resource.quantity,
+                "location": obj.resource.get_coordinates()
+            },
+            demand_details={
+                "id": obj.demand.id,
+                "type": obj.demand.type,
+                "quantity": obj.demand.quantity,
+                "priority": obj.demand.priority,
+                "location": obj.demand.get_coordinates()
+            }
+        )
