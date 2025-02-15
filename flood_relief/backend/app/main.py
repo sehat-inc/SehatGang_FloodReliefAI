@@ -1,11 +1,12 @@
 # main.py
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
+from geoalchemy2 import WKTElement
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from typing import List
-from . import models
-from . import schemas
+from . import models, schemas
 from .database import async_session
+from .utils import get_coordinates
 
 app = FastAPI(title="Disaster Relief API")
 
@@ -32,3 +33,60 @@ async def get_demands(
     
     # Convert the demands to response models
     return [schemas.DemandResponse.from_orm(demand) for demand in demands]
+
+@app.post("/demands/", response_model=schemas.AllocationResponse)
+async def create_demand_allocation(demand: schemas.DemandCreate, db: AsyncSession = Depends(get_db)):
+    try:
+        # Convert city name to coordinates
+        longitude, latitude = await get_coordinates(demand.city)
+        
+        # Create WKT string from coordinates
+        wkt_str = f"POINT({longitude} {latitude})"
+        demand_instance = models.Demand(
+            type=demand.type.value,
+            quantity=demand.quantity,
+            priority=demand.priority,
+            location=WKTElement(wkt_str, srid=4326)
+        )
+        
+        db.add(demand_instance)
+        await db.commit()
+        await db.refresh(demand_instance)
+        
+        # Query for a resource within 20km radius and matching type
+        resource_query = select(models.Resource).where(
+            func.ST_DWithin(
+                models.Resource.location,
+                WKTElement(wkt_str, srid=4326),
+                0.2  # approximately 20km in degrees (0.1 ≈ 10km)
+            ),
+            models.Resource.type == demand.type.value
+        )
+        resource_result = await db.execute(resource_query)
+        resource = resource_result.scalars().first()
+        
+        if resource is None:
+            await db.rollback()
+            raise HTTPException(status_code=404, detail="No resource available at the specified location")
+        
+        if resource.quantity < demand.quantity:
+            await db.rollback()
+            raise HTTPException(status_code=400, detail="Not enough resources available")
+        
+        # Update resource quantity
+        resource.quantity -= demand.quantity
+        
+        # Create allocation record
+        allocation = models.Allocation(
+            resource_id=resource.id,
+            demand_id=demand_instance.id,
+            quantity=demand.quantity
+        )
+        db.add(allocation)
+        await db.commit()
+        await db.refresh(allocation)
+        
+        return allocation
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
