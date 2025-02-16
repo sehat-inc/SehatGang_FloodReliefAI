@@ -26,3 +26,6 @@ This project is designed for flood disaster management. It integrates several co
    - Navigate to `flood-relief-ai/flood_relief/frontend`
    - Run: `python app.py`
 5. For agent workflows, run the CrewAI agents (located under `flood-relief-ai/flood_relief/crewai`) to connect to Discord and execute tasks.
+
+## Experimenting with our Emergency Agent
+1. You can join our [Test Discord Server](https://discord.gg/GXZSAbQj) to recieve emergency alerts. These agents have been connected with our Geospatial OR Tools.
