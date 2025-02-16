@@ -18,9 +18,9 @@ This project is designed for flood disaster management. It integrates several co
 
 ## Running the Project
 1. Ensure you have all Python dependencies installed (use requirements.txt or pip install).
-2. Set up environment variables including `DATABASE_URL`, `OPENAI_API_KEY`, and any Discord configuration needed for CrewAI.
+2. Set up environment variables including `DATABASE_URL`, `OPENAI_API_KEY`, and Discord configuration needed for CrewAI.
 3. Start the backend server:
-   - Navigate to `flood-relief-ai/flood_relief/backend/app`
+   - Navigate to `flood-relief-ai/flood_relief/backend`
    - Run: `uvicorn main:app --reload`
 4. Start the Flask frontend:
    - Navigate to `flood-relief-ai/flood_relief/frontend`
