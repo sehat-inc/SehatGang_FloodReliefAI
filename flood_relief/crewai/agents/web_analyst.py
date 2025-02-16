@@ -61,11 +61,11 @@ fetch_update_task = Task(
     expected_output="Provide your answer in a clear, structured format with headers for each location."
 )
 
-crew = Crew(
+Webcrew = Crew(
     agents=[web_analyst],
     tasks=[fetch_update_task],
     verbose=True,
     planning=True
 )
 
-crew.kickoff()
+Webcrew.kickoff()

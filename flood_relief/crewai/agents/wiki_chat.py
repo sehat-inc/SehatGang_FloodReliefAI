@@ -1,11 +1,11 @@
-from crewai import Agent, LLM, Task, Crew
+from crewai import Agent, Task, Crew, LLM
+from crewai_tools import SerperDevTool
 import os
 import discord
 from dotenv import load_dotenv
 from crewai.knowledge.source.json_knowledge_source import JSONKnowledgeSource
 from crewai.knowledge.source.string_knowledge_source import StringKnowledgeSource
 import json
-from crewai_tools import SerperDevTool
 
 load_dotenv()
 
@@ -18,47 +18,50 @@ client = discord.Client(intents=intents)
 
 llm = LLM(model="gpt-4o-mini",
           api_key=OPENAI_API_KEY)
+# Create tools
+search_tool = SerperDevTool()
 
-serper_tool = SerperDevTool()
-
-chat_agent = Agent(
-    name = "Discord Chat Agent",
-    role="Humanitarian Chat Agent",
-    goal="Goal is to check historical data and data about 2022 Floods in Pakistan to help others.",
-    backstory="You are an expert in volunteer work and disaster management.",
-    llm=llm
-    #tools=[serper_tool]
+# Create the researcher agent
+researcher = Agent(
+    role="Disaster Researcher",
+    goal="Find all information about 2022 Flood in Pakistan",
+    backstory="You are a resarcher who has immense knowledege of ccurent and historical disaster facts in Pakistan.",
+    tools=[search_tool],
+    verbose=True
 )
 
-def create_emergency_task(message_content):
-    """Create a task for processing emergency messages"""
+
+def chat_task(message_content):
+    """Chat task"""
     return Task(
         description=f"""
         Process this message: {message_content}
-        Chat with the user as humanly as possible. While also giving small tips on keeping safe during floods.
+        Reply to the user response. However, make sure it is related to Floods of Pakistan in 2022. 
+        Other wise, direct the conversation to volunteering efforts during crises such as floods and earthquakes.
         """,
-        agent=chat_agent,
-        expected_output=""""""
+        agent=researcher,
+        expected_output="Try to be as human as possible"
     )
+
 
 async def process_with_crew(message_content):
     """Process message using CrewAI"""
     try:
-        task = create_emergency_task(message_content)
+        task = chat_task(message_content)
         crew = Crew(
-            agents=[chat_agent],
+            agents=[researcher],
             tasks=[task],
-            verbose=True
-            #planning=True
+            verbose=True,
+            planning=True
         )
         result = crew.kickoff()
         return result
     except Exception as e:
         return f"Error processing message: {str(e)}"
-
 @client.event
 async def on_ready():
     print(f'{client.user} has connected to Discord!')
+
 
 @client.event
 async def on_message(message):
@@ -73,7 +76,7 @@ async def on_message(message):
     except Exception as e:
         await message.channel.send(f"An error occurred: {str(e)}")
 
-def main():
+def main_():
     try:
         client.run(DISCORD_TOKEN)
     except discord.errors.LoginFailure:
@@ -82,4 +85,4 @@ def main():
         print(f"An error occurred: {str(e)}")
 
 if __name__ == "__main__":
-    main()
+    main_()
